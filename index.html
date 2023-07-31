@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <style>
+      #center {
+        background-color: white;
+        padding: 25px;
+      }
+
+      a:active {
+        background-color: lightblue;
+      }
+
+      .on {
+        background-color: lightblue;
+      }
+
+      .tooltip {
+        position: fixed;
+        padding: 10px;
+        background-color: #2a2828;
+        color: white;
+        pointer-events: none;
+      }
+      .axis {
+        color: black;
+      }
+    </style>
+    <title>Narrative Visualization by Rijul Tikku</title>
+  </head>
+
+  <body>
+    <div id="page">
+      <div id="header">
+        <h1>Analysis of worldwide GDP trends 1700-2008</h1>
+        <h2>Narrative Visualization by Rijul Tikku</h2>
+        <h2>
+          Data from
+          https://en.wikipedia.org/wiki/List_of_regions_by_past_GDP_(PPP)
+        </h2>
+      </div>
+      <div id="bar">
+        <ul>
+          <li><a class="on" href="index.html">1700 </a></li>
+          <li><a href="1800.html">1820</a></li>
+          <li><a href="1900.html">1913</a></li>
+          <li><a href="2000.html">2008</a></li>
+          <li><a href="1800.html">>></a></li>
+        </ul>
+      </div>
+
+      <div class="contentTitle"><h1>Top 5 Countries by GDP</h1></div>
+      <div id="center">
+        <svg></svg>
+      </div>
+
+      <script>
+        //const data = [90750,82800,19539,16196,15390];
+        const data = [
+          { Country: "India", GDP: 90750 },
+          { Country: "China", GDP: 82800 },
+          { Country: "France", GDP: 19539 },
+          { Country: "USSR", GDP: 16196 },
+          { Country: "Japan", GDP: 15390 },
+        ];
+
+        const width = 510;
+        const height = 430;
+
+        const svg = d3
+          .select("svg")
+          .attr("width", 600)
+          .attr("height", 500)
+          .append("g")
+          .attr("transform", `translate(70,20)`);
+
+        var x = d3.scaleBand();
+        x.domain(
+          data.map(function (d) {
+            return d.Country;
+          })
+        )
+          .range([0, width])
+          .padding(0.1);
+
+        var y = d3
+          .scaleLinear()
+          .domain([0, d3.max(data, (d) => d.GDP)])
+          .range([height, 0]);
+
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(0, 430)`)
+          .call(d3.axisBottom(x));
+
+        svg.append("g").attr("class", "axis").call(d3.axisLeft(y));
+
+        svg
+          .selectAll("rect")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x",function(d, i) {return 2 + i * 102})
+          .attr("y", function(d) {return y(d.GDP)})
+          .attr("width", 90)
+          .attr("height", function(d){return height - y(d.GDP)})
+          .attr("fill", "lightblue")
+          .on("mouseover", (event, d) => {
+            const tooltip = d3
+              .select("#center")
+              .append("div")
+              .attr("class", "tooltip")
+              .text("Country: " + d.Country + ", GDP (PPP): " + d.GDP);
+            tooltip
+              .style("left", `${event.clientX - 20}px`)
+              .style("top", `${event.clientY - 30}px`)
+              .style("opacity", 1);
+          })
+          .on("mouseout", () => {
+            d3.selectAll(".tooltip").remove();
+          });
+
+        svg
+          .append("text")
+          .attr("x", width / 2)
+          .attr("y", height + 40)
+          .style("text-anchor", "middle")
+          .text("Country in Year 1700");
+
+        svg
+          .append("text")
+          .attr("x", -height / 2)
+          .attr("y", -60 )
+          .attr("transform", "rotate(-90)")
+          .style("text-anchor", "middle")
+          .text("GDP (PPP) in millions of 1990 International Dollars");
+
+        const annotations = [
+          {
+            type: d3.annotationCallout,
+            note: {
+              label:
+                "Towards the beginning, India and China have the largest GDP due to the fact they have signiciantly larger populations compared to the rest of the countries of the world.",
+              title: "World Leaders",
+            },
+            subject: {
+              y1: y(data[1].GDP),
+              y2: y(data[1].GDP) - 20,
+            },
+            x: 100,
+            y: y(data[1].GDP),
+            dx: 100,
+            dy: 60,
+          },
+        ];
+
+        const annos = d3.annotation().annotations(annotations);
+        svg.append("g").call(annos);
+
+        
+      </script>
+    </div>
+    <div id="footer">
+      <a href="https://www.html.am/templates/downloads/bryantsmith/reverted/"
+        >HTML Template Designed By:
+      </a>
+      <a href="https://www.html.am/templates/downloads/bryantsmith/reverted/"
+        >Bryant Smith</a
+      >
+    </div>
+  </body>
+</html>
